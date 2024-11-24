@@ -1,1 +1,1 @@
-BiGloabl stability analysis of an oceanic front
+BiGlobal stability analysis of an oceanic front
