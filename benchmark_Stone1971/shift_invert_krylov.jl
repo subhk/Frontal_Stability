@@ -48,9 +48,9 @@ end
 function Eigs(𝓛, ℳ; σ::Float64, maxiter::Int)
     λₛ⁻¹, _, info = eigsolve(construct_linear_map(𝓛- σ*ℳ, ℳ), 
                                     rand(ComplexF64, size(𝓛,1)), 
-                                    5, :LR, 
-                                    maxiter=20, 
-                                    krylovdim=600, 
+                                    1, :LR, 
+                                    maxiter=50, 
+                                    krylovdim=250, 
                                     verbosity=0)
 
     if length(λₛ⁻¹) > 0
@@ -99,7 +99,7 @@ end
 function EigSolver_shift_invert_krylov(𝓛, ℳ; σ₀::Float64)
     maxiter::Int = 20
     try 
-        σ = 0.80σ₀
+        σ = 0.50σ₀
         @printf "sigma: %f \n" real(σ) 
         λₛ, _ = Eigs(𝓛, ℳ; σ=σ, maxiter=maxiter)
         @printf "found eigenvalue: %f + im %f \n" λₛ[1].re λₛ[1].im

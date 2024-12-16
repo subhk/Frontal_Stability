@@ -37,8 +37,8 @@ end
 function Eigs(𝓛, ℳ; σ::Float64, maxiter::Int)
     decomp, history = partialschur(construct_linear_map(𝓛 - σ*ℳ, ℳ), 
                                     nev=1, 
-                                    tol=1e-10, 
-                                    restarts=15, 
+                                    tol=1e-12, 
+                                    restarts=50, 
                                     which=:LR)
     λₛ⁻¹, _ = partialeigen(decomp)
     λₛ = @. 1.0 / λₛ⁻¹ + σ
@@ -55,19 +55,13 @@ function EigSolver_shift_invert_arnoldi_checking(𝓛, ℳ; σ₀::Float64, α::
         while converged
             if count > -1; λₛ = λₛ₀; end
             λₛ₀[1] += α * λₛ₀[1] 
-            @printf "targeted eigenvalue: %f \n" λₛ₀[1].re 
+            @printf "eigenvalue: %f + im %f \n" λₛ[1].re λₛ[1].im
             λₛ₀, converged = Eigs(𝓛, ℳ; σ=λₛ₀[1].re, maxiter=20)
-            @printf "found eigenvalue (α=%0.02f): %f + im %f \n" α λₛ₀[1].re λₛ₀[1].im
             count += 1
-            if λₛ₀.re < 1e-5
-                λₛ = λₛ
-            else
-                λₛ = λₛ₀
-            end
         end
     catch error
         #σ = (count==0) ? σ₀ : λₛ[1].re
-        λₛ = λₛ[1] #Eigs(𝓛, ℳ; σ=0.99σ, maxiter=20)
+        λₛ = λₛ #Eigs(𝓛, ℳ; σ=0.99σ, maxiter=20)
     end
     return λₛ #, Χ
 end
@@ -140,7 +134,7 @@ end
 function EigSolver_shift_invert_arnoldi(𝓛, ℳ; σ₀::Float64)
     maxiter::Int = 20
     try 
-        σ = 0.80σ₀
+        σ = 1.20σ₀
         @printf "sigma: %f \n" real(σ) 
         λₛ, _ = Eigs(𝓛, ℳ; σ=σ, maxiter=maxiter)
         @printf "found eigenvalue: %f + im %f \n" λₛ[1].re λₛ[1].im
