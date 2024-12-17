@@ -47,7 +47,7 @@ end
 
 function Eigs(𝓛, ℳ; σ::Float64, maxiter::Int)
     λₛ, _, info = Arpack.eigs(𝓛, ℳ, nev=1, 
-                                    tol=1e-12, 
+                                    tol=1e-7, 
                                     maxiter=10, 
                                     which=:LR, 
                                     sigma=σ,
@@ -84,21 +84,21 @@ end
 function EigSolver_shift_invert1(𝓛, ℳ; σ₀::Float64)
     maxiter::Int = 20
     try 
-        σ = 1.20σ₀
+        σ = 1.25σ₀
         @printf "sigma: %f \n" σ.re
         λₛ, info = Eigs(𝓛, ℳ; σ=σ, maxiter=maxiter)
         @printf "found eigenvalue: %f + im %f \n" λₛ[1].re λₛ[1].im
         return λₛ #, Χ
     catch error
         try 
-            σ = 1.10σ₀
+            σ = 1.15σ₀
             @printf "(first didn't work) sigma: %f \n" real(σ) 
             λₛ, info = Eigs(𝓛, ℳ; σ=σ, maxiter=maxiter)
             @printf "found eigenvalue: %f + im %f \n" λₛ[1].re λₛ[1].im
             return λₛ #, Χ
         catch error
             try 
-                σ = 1.05σ₀
+                σ = 1.10σ₀
                 @printf "(second didn't work) sigma: %f \n" real(σ) 
                 λₛ, info = Eigs(𝓛, ℳ; σ=σ, maxiter=maxiter)
                 @printf "found eigenvalue: %f + im %f \n" λₛ[1].re λₛ[1].im

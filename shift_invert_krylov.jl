@@ -45,12 +45,12 @@ function nearestval_idx(a, x)
     return idx
 end
 
-function Eigs(𝓛, ℳ; σ::Float64, maxiter::Int)
+function Eigs(𝓛, ℳ; σ::ComplexF64, maxiter::Int)
     λₛ⁻¹, _, info = eigsolve(construct_linear_map(𝓛- σ*ℳ, ℳ), 
                                     rand(ComplexF64, size(𝓛,1)), 
                                     1, :LR, 
-                                    maxiter=15, 
-                                    krylovdim=300, 
+                                    maxiter=50, 
+                                    krylovdim=250, 
                                     verbosity=0)
 
     if length(λₛ⁻¹) > 0
@@ -96,18 +96,18 @@ function EigSolver_shift_invert_krylov_checking(𝓛, ℳ; σ₀::ComplexF64, α
 end
 
 
-function EigSolver_shift_invert_krylov(𝓛, ℳ; σ₀::Float64)
+function EigSolver_shift_invert_krylov(𝓛, ℳ; σ₀::ComplexF64)
     maxiter::Int = 20
     try 
-        σ = 0.80σ₀
-        @printf "sigma: %f \n" real(σ) 
+        σ = 0.50σ₀.re + 1.0im * σ₀.im
+        @printf "sigma: %f + (im) %f \n" σ.re σ.im
         λₛ, _ = Eigs(𝓛, ℳ; σ=σ, maxiter=maxiter)
         @printf "found eigenvalue: %f + im %f \n" λₛ[1].re λₛ[1].im
         return λₛ #, Χ
     catch error
         try
-            σ = 0.75σ₀
-            @printf "(first didn't work) sigma: %f \n" real(σ) 
+            σ = 0.75σ₀.re + 1.0im * σ₀.im
+            @printf "(first didn't work) sigma: %f + (im) %f \n" σ.re σ.im
             λₛ, _ = Eigs(𝓛, ℳ; σ=σ, maxiter=maxiter)
             @printf "found eigenvalue: %f + im %f \n" λₛ[1].re λₛ[1].im
             return λₛ #, Χ

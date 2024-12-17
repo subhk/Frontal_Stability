@@ -605,10 +605,10 @@ Parameters:
     L::T        = 1.0          # horizontal domain size
     H::T        = 1.0          # vertical domain size
     Γ::T        = 0.5       # Richardson number
-    ε::T        = 10.0          # front strength Γ ≡ M²/f² = λ/H = 1/ε → ε = 1/Γ
+    ε::T        = 1.0          # front strength Γ ≡ M²/f² = λ/H = 1/ε → ε = 1/Γ
     #β::T        = 0.1          # steepness of the initial buoyancy profile
     kₓ::T       = 0.0          # x-wavenumber
-    E::T        = 1.0e-12      # Ekman number 
+    E::T        = 1.0e-16      # Ekman number 
     Ny::Int64   = 50           # no. of y-grid points
     Nz::Int64   = 50           # no. of z-grid points
     order_accuracy::Int = 4
@@ -690,7 +690,7 @@ function EigSolver(Op, mf, params, emid, ra, x₀, σ, λ₀, it)
     elseif params.method == "krylov"
         printstyled("KrylovKit Method ... \n"; color=:red)
 
-        λₛ = EigSolver_shift_invert_krylov( 𝓛, ℳ, σ₀=σ)
+        λₛ = EigSolver_shift_invert_krylov( 𝓛, ℳ, σ₀=σ - 1.0im*params.kₓ/2.0)
         @printf "found eigenvalue (at first): %f + im %f \n" λₛ[1].re λₛ[1].im
 
         # λₛ = EigSolver_shift_invert_krylov_checking(𝓛, ℳ, σ₀=λₛ[1],   α=0.08)
@@ -824,8 +824,8 @@ function solve_Ou1984()
     
     #kₓ  = range(0.01, stop=8.0, length=200) |> collect
 
-    #kₓ  = range(0.01, stop=1.6, length=160) |> collect
-    kₓ  = range(0.01, stop=1.0, length=100) |> collect
+    kₓ  = range(0.01, stop=1.6, length=160) |> collect
+    #kₓ  = range(0.01, stop=1.0, length=40) |> collect
     #kₓ  = range(32.0, stop=70.0, length=500) |> collect
     Δkₓ = kₓ[2] - kₓ[1]
 
