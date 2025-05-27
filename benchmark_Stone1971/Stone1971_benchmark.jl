@@ -49,8 +49,8 @@ include("shift_invert.jl")
 include("shift_invert_arnoldi.jl")
 include("shift_invert_krylov.jl")
 
-# include("feast.jl")
-# using ..feastLinear
+include("feast.jl")
+using ..feastLinear
 
 # include("FEASTSolver/src/FEASTSolver.jl")
 # using Main.FEASTSolver
@@ -654,10 +654,10 @@ function EigSolver(Op, mf, params, emid, ra, x₀, σ)
         ε     = 1.0e-5      # tolerance
         maxit = 100         # maximum FEAST iterations
         printstyled("Eigensolver using FEAST ...\n"; color=:red)
-        #λₛ, Χ = feast_linear(𝓛, ℳ, x₀, nc, emid, ra, ra, ε, ra, 1e6+1e6im, maxit)
+        λₛ, Χ = feast_linear(𝓛, ℳ, x₀, nc, emid, ra, ra, ε, ra, 1e6+1e6im, maxit)
 
-        contour    = circular_contour_trapezoidal(emid, ra, 10)
-        λₛ, Χ, res = gen_feast!(x₀, 𝓛, ℳ, contour, iter=maxit, debug=true, ϵ=ε)
+        # contour    = circular_contour_trapezoidal(emid, ra, 10)
+        # λₛ, Χ, res = gen_feast!(x₀, 𝓛, ℳ, contour, iter=maxit, debug=true, ϵ=ε)
 
     elseif params.method == "shift_invert"
         printstyled("Eigensolver using Arpack eigs with shift and invert method ...\n"; 
