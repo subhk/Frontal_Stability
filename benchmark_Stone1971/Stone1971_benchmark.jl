@@ -609,15 +609,15 @@ Parameters:
     ε::T        = 0.1          # front strength Γ ≡ M²/f² = λ/H = 1/ε → ε = 1/Γ
     #β::T        = 0.1          # steepness of the initial buoyancy profile
     kₓ::T       = 0.0          # x-wavenumber
-    E::T        = 1.0e-16      # Ekman number 
-    Ny::Int64   = 40           # no. of y-grid points
-    Nz::Int64   = 40           # no. of z-grid points
+    E::T        = 1.0e-9      # Ekman number 
+    Ny::Int64   = 50           # no. of y-grid points
+    Nz::Int64   = 18           # no. of z-grid points
     order_accuracy::Int = 4
-    z_discret::String = "fdm"   # option: "cheb", "fdm"
+    z_discret::String = "cheb"   # option: "cheb", "fdm"
     #method::String   = "feast"
     #method::String    = "shift_invert"
-    method::String    = "krylov"
-    #method::String   = "arnoldi"
+    #method::String    = "krylov"
+    method::String   = "arnoldi"
     #method::String   = "JacobiDavidson"
 end
 
