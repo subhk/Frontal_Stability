@@ -44,16 +44,16 @@ using JacobiDavidson, Plots
 include("dmsuite.jl")
 include("transforms.jl")
 include("utils.jl")
-include("setBCs.jl")
+#include("setBCs.jl")
 include("shift_invert.jl")
 include("shift_invert_arnoldi.jl")
 include("shift_invert_krylov.jl")
 
-include("feast.jl")
-using ..feastLinear
+# include("feast.jl")
+# using ..feastLinear
 
-include("FEASTSolver/src/FEASTSolver.jl")
-using Main.FEASTSolver
+# include("FEASTSolver/src/FEASTSolver.jl")
+# using Main.FEASTSolver
 
 @with_kw mutable struct TwoDimGrid{Ny, Nz} 
     y = @SVector zeros(Float64, Ny)
@@ -230,14 +230,14 @@ function Construct_DerivativeOperator!(diffMatrix, grid, params)
 
     # ------------- setup differentiation matrices  -------------------
     # Fourier in y-direction: y ∈ [0, L)
-    # y1, diffMatrix.𝒟ʸ  = FourierDiff(params.Ny, 1)
-    # _,  diffMatrix.𝒟²ʸ = FourierDiff(params.Ny, 2)
-    # _,  diffMatrix.𝒟⁴ʸ = FourierDiff(params.Ny, 4)
+    y1, diffMatrix.𝒟ʸ  = FourierDiff(params.Ny, 1)
+    _,  diffMatrix.𝒟²ʸ = FourierDiff(params.Ny, 2)
+    _,  diffMatrix.𝒟⁴ʸ = FourierDiff(params.Ny, 4)
 
     # 2nd order accurate finite difference method
-    y1, diffMatrix.𝒟ʸ  = FourierDiff_fdm(params.Ny, 1)
-    _,  diffMatrix.𝒟²ʸ = FourierDiff_fdm(params.Ny, 2)
-    _,  diffMatrix.𝒟⁴ʸ = FourierDiff_fdm(params.Ny, 4)
+    # y1, diffMatrix.𝒟ʸ  = FourierDiff_fdm(params.Ny, 1)
+    # _,  diffMatrix.𝒟²ʸ = FourierDiff_fdm(params.Ny, 2)
+    # _,  diffMatrix.𝒟⁴ʸ = FourierDiff_fdm(params.Ny, 4)
 
     # 4th order accurate finite difference method
     # y1, diffMatrix.𝒟ʸ  = FourierDiff_fdm_4th(params.Ny, 1)
@@ -260,26 +260,27 @@ function Construct_DerivativeOperator!(diffMatrix, grid, params)
 
     if params.z_discret == "cheb"
         # Chebyshev in the z-direction
-        # z, diffMatrix.𝒟ᶻ  = cheb(params.Nz-1)
-        # grid.z = z
-        # diffMatrix.𝒟²ᶻ = diffMatrix.𝒟ᶻ  * diffMatrix.𝒟ᶻ
-        # diffMatrix.𝒟⁴ᶻ = diffMatrix.𝒟²ᶻ * diffMatrix.𝒟²ᶻ
 
-        z1, D1z = chebdif(params.Nz, 1)
-        _,  D2z = chebdif(params.Nz, 2)
-        _,  D3z = chebdif(params.Nz, 3)
-        _,  D4z = chebdif(params.Nz, 4)
-        # Transform the domain and derivative operators from [-1, 1] → [0, H]
-        grid.z, diffMatrix.𝒟ᶻ, diffMatrix.𝒟²ᶻ  = chebder_transform(z1,  D1z, 
-                                                                        D2z, 
-                                                                        zerotoL_transform, 
-                                                                        params.H)
-        _, _, diffMatrix.𝒟⁴ᶻ = chebder_transform_ho(z1, D1z, 
-                                                        D2z, 
-                                                        D3z, 
-                                                        D4z, 
-                                                        zerotoL_transform_ho, 
-                                                        params.H)
+        z, diffMatrix.𝒟ᶻ  = cheb(params.Nz-1)
+        grid.z = z
+        diffMatrix.𝒟²ᶻ = diffMatrix.𝒟ᶻ  * diffMatrix.𝒟ᶻ
+        diffMatrix.𝒟⁴ᶻ = diffMatrix.𝒟²ᶻ * diffMatrix.𝒟²ᶻ
+
+        # z1, D1z = chebdif(params.Nz, 1)
+        # _,  D2z = chebdif(params.Nz, 2)
+        # _,  D3z = chebdif(params.Nz, 3)
+        # _,  D4z = chebdif(params.Nz, 4)
+        # # Transform the domain and derivative operators from [-1, 1] → [0, H]
+        # grid.z, diffMatrix.𝒟ᶻ, diffMatrix.𝒟²ᶻ  = chebder_transform(z1,  D1z, 
+        #                                                                 D2z, 
+        #                                                                 zerotoL_transform, 
+        #                                                                 params.H)
+        # _, _, diffMatrix.𝒟⁴ᶻ = chebder_transform_ho(z1, D1z, 
+        #                                                 D2z, 
+        #                                                 D3z, 
+        #                                                 D4z, 
+        #                                                 zerotoL_transform_ho, 
+        #                                                 params.H)
         
         @printf "size of Chebyshev matrix: %d × %d \n" size(diffMatrix.𝒟ᶻ)[1]  size(diffMatrix.𝒟ᶻ)[2]
 
@@ -604,13 +605,13 @@ Parameters:
 @with_kw mutable struct Params{T<:Real} @deftype T
     L::T        = 1.0          # horizontal domain size
     H::T        = 1.0          # vertical domain size
-    Γ::T        = 0.5       # Richardson number
-    ε::T        = 1.0          # front strength Γ ≡ M²/f² = λ/H = 1/ε → ε = 1/Γ
+    Γ::T        = 0.1       # Richardson number
+    ε::T        = 0.1          # front strength Γ ≡ M²/f² = λ/H = 1/ε → ε = 1/Γ
     #β::T        = 0.1          # steepness of the initial buoyancy profile
     kₓ::T       = 0.0          # x-wavenumber
     E::T        = 1.0e-16      # Ekman number 
-    Ny::Int64   = 50           # no. of y-grid points
-    Nz::Int64   = 50           # no. of z-grid points
+    Ny::Int64   = 40           # no. of y-grid points
+    Nz::Int64   = 40           # no. of z-grid points
     order_accuracy::Int = 4
     z_discret::String = "fdm"   # option: "cheb", "fdm"
     #method::String   = "feast"
@@ -636,8 +637,8 @@ function construct_linear_map(A, B)
     LinearMap{eltype(A)}(a, size(A,1), ismutating=true)
 end
 
-function EigSolver(Op, mf, params, emid, ra, x₀, σ, λ₀, it)
-    printstyled("($it) kₓ: $(params.kₓ) \n"; color=:blue)
+function EigSolver(Op, mf, params, emid, ra, x₀, σ)
+    printstyled("kₓ: $(params.kₓ) \n"; color=:blue)
 
     𝓛, ℳ = construct_matrices(Op, mf, params)
     
@@ -690,7 +691,7 @@ function EigSolver(Op, mf, params, emid, ra, x₀, σ, λ₀, it)
     elseif params.method == "krylov"
         printstyled("KrylovKit Method ... \n"; color=:red)
 
-        λₛ = EigSolver_shift_invert_krylov( 𝓛, ℳ, σ₀=σ - 1.0im*params.kₓ/2.0)
+        λₛ = EigSolver_shift_invert_krylov( 𝓛, ℳ, σ₀=σ - 0.0im*params.kₓ/2.0)
         @printf "found eigenvalue (at first): %f + im %f \n" λₛ[1].re λₛ[1].im
 
         # λₛ = EigSolver_shift_invert_krylov_checking(𝓛, ℳ, σ₀=λₛ[1],   α=0.08)
@@ -824,10 +825,10 @@ function solve_Ou1984()
     
     #kₓ  = range(0.01, stop=8.0, length=200) |> collect
 
-    kₓ  = range(0.01, stop=1.6, length=160) |> collect
+    #kₓ  = range(0.01, stop=1.6, length=160) |> collect
     #kₓ  = range(0.01, stop=1.0, length=40) |> collect
     #kₓ  = range(32.0, stop=70.0, length=500) |> collect
-    Δkₓ = kₓ[2] - kₓ[1]
+    #Δkₓ = kₓ[2] - kₓ[1]
 
     # file = jldopen("eigenvals_beta2.0_ep0.1_50120_E1e-8.jld2", "r");
 	# kₓ   = file["kₓ"];   
@@ -835,11 +836,13 @@ function solve_Ou1984()
 	# close(file)
     # Δkₓ = kₓ[2] - kₓ[1]
 
-    @printf "total number of kₓ: %d \n" length(kₓ)
-    λₛ  = zeros(ComplexF64, length(kₓ))
+    #@printf "total number of kₓ: %d \n" length(kₓ)
+    #λₛ  = zeros(ComplexF64, length(kₓ))
+
+    kₓ = 0.5
     
     m₀   = 20 #40 #100          #subspace dimension  
-    ra   = 0.002  #0.03 #0.00008 
+    ra   = 0.08  #0.03 #0.00008 
     ra₀  = ra
     emid = complex(ra, 1ra)
     if params.method == "feast"; println("$emid ($ra)"); end
@@ -848,7 +851,7 @@ function solve_Ou1984()
         params.kₓ = kₓ[it] 
         
         if it == 1
-            @time λₛ[it] = EigSolver(Op, mf, params, emid, 1ra, x₀, ra, λₛ, it)
+            @time λₛ = EigSolver(Op, mf, params, emid, 1ra, x₀, ra)
             #@time λₛ[it], Χ = EigSolver(Op, mf, params, emid, ra, x₀, λ₂[it].re, it)
         else
             ra   = 0.005
@@ -869,10 +872,10 @@ function solve_Ou1984()
             # end
             if params.method == "feast"; println("$emid ($ra)"); end
             if it == 2
-                @time λₛ[it] = EigSolver(Op, mf, params, emid, 0.5ra, x₀, λₛ[it-1].re, λₛ, it)
+                @time λₛ = EigSolver(Op, mf, params, emid, 0.5ra, x₀, 0.0)
                 #@time λₛ[it], Χ = EigSolver(Op, mf, params, emid, ra, x₀, λ₂[it].re, it)
             else
-                @time λₛ[it] = EigSolver(Op, mf, params, emid, 0.5ra, x₀, λₛ[it-1].re, λₛ, it)
+                @time λₛ = EigSolver(Op, mf, params, emid, 0.5ra, x₀, 0.0)
                 #@time λₛ[it], Χ = EigSolver(Op, mf, params, emid, ra, x₀, λ₂[it].re, it)
             end
         end
@@ -886,11 +889,11 @@ function solve_Ou1984()
     end
 
     #β  = params.β
-    ε  = params.ε
-    Ny::Int = params.Ny
-    Nz::Int = params.Nz 
-    filename = "nw_run/eigenvals" * "_ep" * string(ε) * "_" * string(Nz) * string(Ny) * ".jld2"
-    jldsave(filename; kₓ=kₓ, λₛ=λₛ)
+    # ε  = params.ε
+    # Ny::Int = params.Ny
+    # Nz::Int = params.Nz 
+    # filename = "nw_run/eigenvals" * "_ep" * string(ε) * "_" * string(Nz) * string(Ny) * ".jld2"
+    # jldsave(filename; kₓ=kₓ, λₛ=λₛ)
 end
 
 solve_Ou1984()
