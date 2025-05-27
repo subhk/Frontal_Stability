@@ -261,26 +261,26 @@ function Construct_DerivativeOperator!(diffMatrix, grid, params)
     if params.z_discret == "cheb"
         # Chebyshev in the z-direction
 
-        z, diffMatrix.𝒟ᶻ  = cheb(params.Nz-1)
-        grid.z = z
-        diffMatrix.𝒟²ᶻ = diffMatrix.𝒟ᶻ  * diffMatrix.𝒟ᶻ
-        diffMatrix.𝒟⁴ᶻ = diffMatrix.𝒟²ᶻ * diffMatrix.𝒟²ᶻ
+        # z, diffMatrix.𝒟ᶻ  = cheb(params.Nz-1)
+        # grid.z = z
+        # diffMatrix.𝒟²ᶻ = diffMatrix.𝒟ᶻ  * diffMatrix.𝒟ᶻ
+        # diffMatrix.𝒟⁴ᶻ = diffMatrix.𝒟²ᶻ * diffMatrix.𝒟²ᶻ
 
-        # z1, D1z = chebdif(params.Nz, 1)
-        # _,  D2z = chebdif(params.Nz, 2)
-        # _,  D3z = chebdif(params.Nz, 3)
-        # _,  D4z = chebdif(params.Nz, 4)
-        # # Transform the domain and derivative operators from [-1, 1] → [0, H]
-        # grid.z, diffMatrix.𝒟ᶻ, diffMatrix.𝒟²ᶻ  = chebder_transform(z1,  D1z, 
-        #                                                                 D2z, 
-        #                                                                 zerotoL_transform, 
-        #                                                                 params.H)
-        # _, _, diffMatrix.𝒟⁴ᶻ = chebder_transform_ho(z1, D1z, 
-        #                                                 D2z, 
-        #                                                 D3z, 
-        #                                                 D4z, 
-        #                                                 zerotoL_transform_ho, 
-        #                                                 params.H)
+        z1, D1z = chebdif(params.Nz, 1)
+        _,  D2z = chebdif(params.Nz, 2)
+        _,  D3z = chebdif(params.Nz, 3)
+        _,  D4z = chebdif(params.Nz, 4)
+        # Transform the domain and derivative operators from [-1, 1] → [0, H]
+        grid.z, diffMatrix.𝒟ᶻ, diffMatrix.𝒟²ᶻ  = chebder_transform(z1,  D1z, 
+                                                                        D2z, 
+                                                                        zerotoL_transform, 
+                                                                        params.H)
+        _, _, diffMatrix.𝒟⁴ᶻ = chebder_transform_ho(z1, D1z, 
+                                                        D2z, 
+                                                        D3z, 
+                                                        D4z, 
+                                                        zerotoL_transform_ho, 
+                                                        params.H)
         
         @printf "size of Chebyshev matrix: %d × %d \n" size(diffMatrix.𝒟ᶻ)[1]  size(diffMatrix.𝒟ᶻ)[2]
 
@@ -609,15 +609,15 @@ Parameters:
     ε::T        = 0.1          # front strength Γ ≡ M²/f² = λ/H = 1/ε → ε = 1/Γ
     #β::T        = 0.1          # steepness of the initial buoyancy profile
     kₓ::T       = 0.0          # x-wavenumber
-    E::T        = 1.0e-9      # Ekman number 
-    Ny::Int64   = 50           # no. of y-grid points
-    Nz::Int64   = 18           # no. of z-grid points
+    E::T        = 1.0e-16      # Ekman number 
+    Ny::Int64   = 40           # no. of y-grid points
+    Nz::Int64   = 20           # no. of z-grid points
     order_accuracy::Int = 4
     z_discret::String = "cheb"   # option: "cheb", "fdm"
-    #method::String   = "feast"
+    method::String   = "feast"
     #method::String    = "shift_invert"
     #method::String    = "krylov"
-    method::String   = "arnoldi"
+    #method::String   = "arnoldi"
     #method::String   = "JacobiDavidson"
 end
 
@@ -839,13 +839,15 @@ function solve_Ou1984()
     #@printf "total number of kₓ: %d \n" length(kₓ)
     #λₛ  = zeros(ComplexF64, length(kₓ))
 
-    kₓ = 0.5
+    kₓ = 0.01
     
     m₀   = 20 #40 #100          #subspace dimension  
-    ra   = 0.08  #0.03 #0.00008 
+    ra   = 0.005  #0.03 #0.00008 
     ra₀  = ra
     emid = complex(ra, 1ra)
-    if params.method == "feast"; println("$emid ($ra)"); end
+    
+    #if params.method == "feast"; println("$emid ($ra)"); end
+    
     x₀   = sprand(ComplexF64, MatSize, m₀, 0.2) 
     for it in 1:length(kₓ)
         params.kₓ = kₓ[it] 
@@ -887,6 +889,12 @@ function solve_Ou1984()
         #                                     kₓ=params.kₓ, λₛ=λₛ[1], 
         #                                     X=Χ, U=diag(mf.U₀), B=diag(mf.B₀));
     end
+
+    # Analytical solution of Stone (1971) for the growth rate
+    cnst = 1.0 + 1.0/params.Γ + 5.0*params.ε^2 * params.kₓ^2/42.0 
+    λₛₜ = 1.0/(2.0*√3.0) * (params.kₓ - 2.0/15.0 * params.kₓ^3 * cnst)
+
+    @printf "Analytical solution of Stone (1971): %1.4e \n" λₛₜ 
 
     #β  = params.β
     # ε  = params.ε

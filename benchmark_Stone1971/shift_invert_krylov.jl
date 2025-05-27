@@ -49,8 +49,8 @@ function Eigs(𝓛, ℳ; σ::ComplexF64, maxiter::Int)
     λₛ⁻¹, _, info = eigsolve(construct_linear_map(𝓛- σ*ℳ, ℳ), 
                                     rand(ComplexF64, size(𝓛,1)), 
                                     1, :LR, 
-                                    maxiter=50, 
-                                    krylovdim=250, 
+                                    maxiter=500, 
+                                    krylovdim=100, 
                                     verbosity=0)
 
     if length(λₛ⁻¹) > 0
