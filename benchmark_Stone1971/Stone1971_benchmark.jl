@@ -49,11 +49,11 @@ include("shift_invert.jl")
 include("shift_invert_arnoldi.jl")
 include("shift_invert_krylov.jl")
 
-include("feast.jl")
-using ..feastLinear
+# include("feast.jl")
+# using ..feastLinear
 
-# include("FEASTSolver/src/FEASTSolver.jl")
-# using Main.FEASTSolver
+include("FEASTSolver/src/FEASTSolver.jl")
+using Main.FEASTSolver
 
 @with_kw mutable struct TwoDimGrid{Ny, Nz} 
     y = @SVector zeros(Float64, Ny)
@@ -610,7 +610,7 @@ Parameters:
     #β::T        = 0.1          # steepness of the initial buoyancy profile
     kₓ::T       = 0.0          # x-wavenumber
     E::T        = 1.0e-16      # Ekman number 
-    Ny::Int64   = 40           # no. of y-grid points
+    Ny::Int64   = 20           # no. of y-grid points
     Nz::Int64   = 20           # no. of z-grid points
     order_accuracy::Int = 4
     z_discret::String = "cheb"   # option: "cheb", "fdm"
@@ -654,10 +654,12 @@ function EigSolver(Op, mf, params, emid, ra, x₀, σ)
         ε     = 1.0e-5      # tolerance
         maxit = 100         # maximum FEAST iterations
         printstyled("Eigensolver using FEAST ...\n"; color=:red)
-        λₛ, Χ = feast_linear(𝓛, ℳ, x₀, nc, emid, ra, ra, ε, ra, 1e6+1e6im, maxit)
+        #λₛ, Χ = feast_linear(𝓛, ℳ, x₀, nc, emid, ra, ra, ε, ra, 1e6+1e6im, maxit)
+:q
 
-        # contour    = circular_contour_trapezoidal(emid, ra, 10)
-        # λₛ, Χ, res = gen_feast!(x₀, 𝓛, ℳ, contour, iter=maxit, debug=true, ϵ=ε)
+
+        contour    = circular_contour_trapezoidal(emid, ra, 40)
+        λₛ, Χ, res = gen_feast!(x₀, 𝓛, ℳ, contour, iter=maxit, debug=true, ϵ=ε)
 
     elseif params.method == "shift_invert"
         printstyled("Eigensolver using Arpack eigs with shift and invert method ...\n"; 
@@ -842,9 +844,9 @@ function solve_Ou1984()
     kₓ = 0.01
     
     m₀   = 20 #40 #100          #subspace dimension  
-    ra   = 0.005  #0.03 #0.00008 
+    ra   = 0.002  #0.03 #0.00008 
     ra₀  = ra
-    emid = complex(ra, 1ra)
+    emid = complex(ra, -0.005)
     
     #if params.method == "feast"; println("$emid ($ra)"); end
     
